@@ -9,7 +9,6 @@
 import UIKit
 
 public class PBSectionCell: UICollectionViewCell {
-    
     @IBOutlet public var view: UIView!
     @IBOutlet public var label: UILabel!
 }

@@ -4,19 +4,25 @@
 //
 //  Created by Paul Bancarel on 10/07/2016.
 //  Copyright © 2016 TheFrenchTouchDeveloper. All rights reserved.
-//
 
 import UIKit
 
 public protocol PBSectionViewDelegate{
-    func onTouchItem(item:PBItem)
+    func onTouchItem(item:PBItem) // Called when an item is touched
 }
 public class PBSectionView: UICollectionView, UICollectionViewDataSource, UICollectionViewDelegate, UICollectionViewDelegateFlowLayout {
     
-    public var items:[PBItem] = []
-    public var sectionDelegate:PBSectionViewDelegate?
+    public var items:[PBItem] = [] // The items in the section
+    public var sectionDelegate:PBSectionViewDelegate? // The delegate for callbacks
     
     
+    /**
+     Constructor
+     
+     - Parameters:
+     - frame
+     - collectionViewLayout
+     */
     public override init(frame: CGRect, collectionViewLayout layout: UICollectionViewLayout) {
         super.init(frame: frame, collectionViewLayout: layout)
         setupConfiguration()
@@ -27,6 +33,9 @@ public class PBSectionView: UICollectionView, UICollectionViewDataSource, UIColl
         setupConfiguration()
     }
     
+    /**
+     Setup configuration for the section view (backgroundColor, dataSource, flowLayout, etc)
+     */
     private func setupConfiguration(){
         self.backgroundColor = UIColor.clearColor()
         self.dataSource = self
@@ -37,13 +46,11 @@ public class PBSectionView: UICollectionView, UICollectionViewDataSource, UIColl
         
         self.showsHorizontalScrollIndicator = false
         self.registerNib(UINib(nibName: "PBSectionCell", bundle: nil), forCellWithReuseIdentifier: "pbsectioncell")
-        
     }
     
     public func collectionView(collectionView: UICollectionView, cellForItemAtIndexPath indexPath: NSIndexPath) -> UICollectionViewCell {
         
         let cell = collectionView.dequeueReusableCellWithReuseIdentifier("pbsectioncell", forIndexPath: indexPath) as! PBSectionCell
-        
         let item = items[indexPath.row]
         
         // Set the cell
@@ -54,20 +61,12 @@ public class PBSectionView: UICollectionView, UICollectionViewDataSource, UIColl
         return cell
     }
     
-    
     public func collectionView(collectionView: UICollectionView,
                         layout collectionViewLayout: UICollectionViewLayout,
                                sizeForItemAtIndexPath indexPath: NSIndexPath) -> CGSize {
         
         return CGSize(width: 100, height: 40)
     }
-    
-    
-    //    func collectionView(collectionView: UICollectionView,
-    //        layout collectionViewLayout: UICollectionViewLayout,
-    //        insetForSectionAtIndex section: Int) -> UIEdgeInsets {
-    //            return sectionInsets
-    //    }
     
     public func numberOfSectionsInCollectionView(collectionView: UICollectionView) -> Int {
         return 1
@@ -83,5 +82,3 @@ public class PBSectionView: UICollectionView, UICollectionViewDataSource, UIColl
     }
     
 }
-
-

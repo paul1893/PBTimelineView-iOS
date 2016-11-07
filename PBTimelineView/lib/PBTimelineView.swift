@@ -10,9 +10,7 @@ import Foundation
 import UIKit
 
 public protocol PBTimelineViewDelegate{
-    
-    func onClickItem(titleItem:String, id:Int, section:Int)
-    
+    func onClickItem(titleItem:String, id:Int, section:Int) // Call when an item of the timeline is clicked
 }
 
 @IBDesignable
@@ -39,11 +37,7 @@ public class PBTimelineView:UIView, PBSectionViewDelegate{
     @IBInspectable
     public  var strokeLine:CGFloat = 2.0
     @IBInspectable
-    public  var leftOffset:Int = 30{
-        didSet{
-            
-        }
-    }
+    public  var leftOffset:Int = 30
     
     /* Calendar */
     @IBInspectable
@@ -66,22 +60,8 @@ public class PBTimelineView:UIView, PBSectionViewDelegate{
     @IBInspectable
     public  var textColorItem: UIColor = UIColor.whiteColor()
     
-    /* Needs two variable cannot assign a value to itself in the set and cannot return itself in the get. Not their purpose. */
-    //    private var data: Array<Array<String>>!
-    //    var dataSource: Array<Array<String>>{
-    //        get{
-    //            return self.data
-    //            }
-    //        set {
-    //            self.data = newValue
-    //            self.setNeedsDisplay()
-    //            }
-    //    }
     
-    //OR
-    
-    public var data: Array<Array<String>>!{
-        // or WillSet
+    public var data: Array<Array<String>>!{ // The Texts of the items: 2D Array
         didSet{
             //Fresh base
             self.subviews.forEach {
@@ -118,12 +98,15 @@ public class PBTimelineView:UIView, PBSectionViewDelegate{
         }
     }
     
+    /**
+     Update texts with calendar elements
+     */
     public func updateCalendar(){
         let date = NSDate()
         let calendar = NSCalendar.currentCalendar()
         let components = calendar.components([.Day , .Month , .Year], fromDate: date)
         
-        //let year =  components.year
+        /*let year =  components.year*/ // TODO: Activate this on the next update
         let month = components.month
         let day = components.day
         
@@ -134,57 +117,57 @@ public class PBTimelineView:UIView, PBSectionViewDelegate{
         texts = getNextDaysName(numberOfPoints)
     }
     
+    /**
+     Drawing the timeline view on the rectangle
+     
+     - Parameters:
+     - rect: Rect surface to draw
+     */
     public override func drawRect(rect: CGRect) {
         lineColor.setFill()
         lineColor.setStroke()
         
-        // Method 1
+        /* Method 1: */
         // Draw the vertical line
         var path = UIBezierPath()
         path.lineWidth = strokeLine
         var startPoint = CGPoint(x: leftOffset, y: 0)
-        var endPoint = CGPoint(x: leftOffset, y: Int(self.frame.size.height))
+        let endPoint = CGPoint(x: leftOffset, y: Int(self.frame.size.height))
         path.moveToPoint(startPoint)
         path.addLineToPoint(endPoint)
         
-        // On dessine
-        path.stroke()
-        //OR
-        //applySublayer(path)
+        // Drawing
+        path.stroke() //OR applySublayer(path)
         
-        
-        //Write the title
+        // Write the title
         var attrs = fontAttributes("Helvetica Light", fontSize: mainTextSize, textColor: mainTextColor, textAlignement: NSTextAlignment.Left)
         mainText.drawInRect(CGRectMake(CGFloat(leftOffset) + padding, 30, self.frame.size.width, 40), withAttributes: attrs)
         
-        
-        
+        // Divide the line in equal segment
         let fraction:Int = Int(self.frame.size.height) / numberOfPoints
         
-        //Draw the circle and the title
+        // Draw the circle and the title at the intersection of each segment
         for (var i = 1; i < numberOfPoints; i += 1) {
             let k = i-1
             
-            // On centre le point
+            // Center point
             startPoint = CGPoint(x: leftOffset-Int(radiusPoint), y: fraction*i)
             
-            // On trace le cercle
+            // Draw circle
             path = UIBezierPath(ovalInRect:CGRect(origin: startPoint,size: CGSize(width: radiusPoint*2, height: radiusPoint*2)))
             path.fill()
             
-            // On dessine
-            path.stroke()
-            //OR
-            //applySublayer(path)
+            // Drawing
+            path.stroke() //OR applySublayer(path)
             
-            //Write the event
+            // Write the event
             if texts.count > 0 {
                 let textToWrite = texts[k]
                 attrs = fontAttributes("Helvetica Light", fontSize: textSize, textColor: textColor, textAlignement: NSTextAlignment.Left)
                 textToWrite.drawInRect(CGRectMake(CGFloat(leftOffset) - textToWrite.size(attrs).width - padding, startPoint.y-radiusPoint-(textToWrite.size(attrs).height/2), CGFloat(leftOffset), 25), withAttributes: attrs)
             }
             
-            //Draw Event
+            // Draw the Event
             if (k < data.count){
                 let sectionView = PBSectionView(frame: CGRectMake(startPoint.x+padding, startPoint.y - (heightItem/2), self.frame.width-CGFloat(leftOffset)-padding , heightItem), collectionViewLayout:UICollectionViewFlowLayout())
                 var pbitems:Array<PBItem> = []
@@ -199,8 +182,8 @@ public class PBTimelineView:UIView, PBSectionViewDelegate{
             
         }
         
-        /* // Method 2 (deprecated)
-         let context = UIGraphicsGetCurrentContext()
+        /* Method 2 (DEPRECATED) */
+        /* let context = UIGraphicsGetCurrentContext()
          CGContextSaveGState(context);
          
          CGContextSetStrokeColorWithColor(context, lineColor.CGColor)
@@ -233,26 +216,38 @@ public class PBTimelineView:UIView, PBSectionViewDelegate{
          }
          
          CGContextRestoreGState(context);*/
-        
     }
     
+    /**
+     Apply a sub layer to the current layer
+     
+     - Parameters:
+     */
     private func applySublayer(path :UIBezierPath){
-        
-        //Params
-        var shapeLayer = CAShapeLayer()
-        //change the fill color
+        // Create a ShapeLayer
+        let shapeLayer = CAShapeLayer()
+        // Change the fill color
         shapeLayer.fillColor = lineColor.CGColor
-        //you can change the stroke color
+        // Change the stroke color
         shapeLayer.strokeColor = lineColor.CGColor
-        //you can change the line width
+        // Change the line width
         shapeLayer.lineWidth = strokeLine
         shapeLayer.path = path.CGPath
         self.layer.addSublayer(shapeLayer)
-        
     }
     
+    /**
+     Get fonts attributes for the events
+     
+     - Parameters:
+     - fontName: The name of the font you want
+     - fontSize: The size of the font you want
+     - textColor: The color of the text you want
+     - textAlignement: The alignement of the text you want
+     
+     - Returns: attributes
+     */
     private func fontAttributes(fontName:String, fontSize:CGFloat, textColor:UIColor, textAlignement:NSTextAlignment) -> [String : AnyObject]{
-        
         let font:UIFont = UIFont(name: fontName, size: fontSize)!
         let textStyle = NSMutableParagraphStyle.defaultParagraphStyle().mutableCopy() as! NSMutableParagraphStyle
         textStyle.alignment = textAlignement
@@ -267,11 +262,24 @@ public class PBTimelineView:UIView, PBSectionViewDelegate{
         return textFontAttributes
     }
     
+    /**
+     Call when an item of the timeline is touched
+     
+     - Parameters:
+     - item: The item that has been touched
+     */
     public func onTouchItem(item:PBItem){
         delegate?.onClickItem(item.text, id: item.id, section: item.section)
-        
     }
     
+    /**
+     Get names of the 'n' next days. Starting from now
+     
+     - Parameters:
+     - n: The number of next days
+     
+     - Returns: names
+     */
     private func getNextDaysName(n:Int) -> Array<String>{
         
         var arrayDaysString:Array<String> = []
@@ -282,7 +290,7 @@ public class PBTimelineView:UIView, PBSectionViewDelegate{
         var components:NSDateComponents!
         var dayOfWeekString:String!
         
-        for var i = 0; i < n; i += 1 {
+        for i in 0 ..< n {
             let date = NSDate(timeIntervalSinceNow: Double(i*24*60*60))
             
             components = calendar.components([.Weekday , .Day , .Month], fromDate: date)
@@ -293,11 +301,9 @@ public class PBTimelineView:UIView, PBSectionViewDelegate{
         
         return arrayDaysString
     }
-    
 }
 
 public extension String{
-    
     func size(attrs:[String : AnyObject]?) -> CGSize{
         return NSString(string: self).sizeWithAttributes(attrs)
     }
